@@ -5,7 +5,6 @@ import json
 import numpy as np
 from datetime import datetime
 from datetime import timedelta
-import matplotlib.pyplot as plt
 
 # 현재 날짜 가져오기 + 현재 날짜 +14일 되는 날 -> 변수화
 today = datetime.now().date()
