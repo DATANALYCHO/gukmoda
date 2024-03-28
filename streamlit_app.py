@@ -73,25 +73,41 @@ st.header("🥇 실시간 인기 교육 1~3위 🥇", anchor=None, help=None)
 col_metric1, col_metric2, col_metric3 = st.columns(3)
 
 with col_metric1:
-    st.write(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['주관 기관'].values[0])
+    st.subheader(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['주관 기관'].values[0])
+    index_string = str(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=1).iloc[-1]].index)
+    result = index_string.split("[")[1].split("]")[0]
+    st.text(result[1:3])
     st.metric(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['교육 명'].values[0], value = str(df_filter['신청 인원'].nlargest(n=1).iloc[-1]) + "명")
+    a = df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
 
 with col_metric2:
-    st.write(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['주관 기관'].values[0])
+    st.subheader(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['주관 기관'].values[0])
+    index_string = str(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=2).iloc[-1]].index)
+    result = index_string.split("[")[1].split("]")[0]
+    st.text(result[1:3])
     st.metric(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['교육 명'].values[0], value = str(df_filter['신청 인원'].nlargest(n=2).iloc[-1]) + "명")
+    a = df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
 
 with col_metric3:
-    st.write(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['주관 기관'].values[0])
+    st.subheader(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['주관 기관'].values[0])
+    index_string = str(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=3).iloc[-1]].index)
+    result = index_string.split("[")[1].split("]")[0]
+    st.text(result[1:3])
     st.metric(df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['교육 명'].values[0] , value = str(df_filter['신청 인원'].nlargest(n=3).iloc[-1]) + "명")
+    a = df_filter[df_filter['신청 인원'] == df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
 
-
-st.header("✏️2주 내 개강 과정✏️", anchor=None, help=None, divider='gray')
+st.divider()
+st.header("✏️2주 내 개강 과정✏️", anchor=None, help=None)
 st.caption('아래 내용은 실시간으로 업데이트 됩니다!')
 
-
-
+# 데이터 프레임 출력
 if not countries:
     st.dataframe(df)
 else:
     st.dataframe(df.loc[countries])
     df.sort_index()
+    
+st.divider()
