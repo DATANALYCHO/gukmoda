@@ -287,9 +287,9 @@ st.caption('아래 내용은 실시간으로 업데이트 됩니다!')
 
 # 데이터 프레임 출력
 if not countries:
-    st.dataframe(df)
+    st.dataframe(df, column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
 else:
-    st.dataframe(df.loc[countries])
+    st.dataframe(df.loc[countries], column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
     df.sort_index()
     
 st.divider()
@@ -337,9 +337,9 @@ st.caption('아래 내용은 실시간으로 업데이트 됩니다!')
 
 # 데이터 프레임 출력
 if not ka_countries:
-    st.dataframe(kdt_ace_df)
+    st.dataframe(kdt_ace_df, column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
 else:
-    st.dataframe(kdt_ace_df.loc[ka_countries])
+    st.dataframe(kdt_ace_df.loc[ka_countries], column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
     kdt_ace_df.sort_index()
 
 st.divider()
@@ -427,16 +427,16 @@ st.header("✏️2023년 과정 별 총 수강 인원✏️", anchor=None, help=
 
 # 데이터 프레임 출력
 if not last_year_countries:
-    st.dataframe(last_year_data_df)
+    st.dataframe(last_year_data_df, column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
 else:
-    st.dataframe(last_year_data_df.loc[last_year_countries])
+    st.dataframe(last_year_data_df.loc[last_year_countries], column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
     last_year_data_df.sort_index()
 st.divider()
 st.header("✏️2023년 총 수강 인원✏️", anchor=None, help=None)
 
 last_year_graph_data1, last_year_graph_data2 = st.columns(2)
 with last_year_graph_data1:
-    st.dataframe(data=last_year_sheet_data_df)
+    st.dataframe(data=last_year_sheet_data_df, column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
     
 with last_year_graph_data2:   
     st.bar_chart(data=last_year_graph_data_df)
