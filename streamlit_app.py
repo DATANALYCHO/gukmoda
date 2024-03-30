@@ -12,6 +12,7 @@ today = datetime.now().date()
 to_day = str(today)
 one_week = str(today + timedelta(days=7))
 two_week = str(today + timedelta(days=14))
+two_month = str(today + timedelta(days=60))
 
 #2주 데이터 호출
 startdate = to_day[0:4]+to_day[5:7]+to_day[8:10]
@@ -75,6 +76,41 @@ kdc_data['지역'] = kdc_data['지역'].apply(lambda x: x[:6] if x.startswith('�
 kdc_data = kdc_data.set_index(keys='지역')
 kdc_df = kdc_data
 
+#KDT 우수기업 데이터 호출
+startdate = to_day[0:4]+to_day[5:7]+to_day[8:10]
+enddate = two_month[0:4]+two_month[5:7]+two_month[8:10]
+
+b = []
+for i in range(1,5):
+  two_month_url = f"https://www.hrd.go.kr/jsp/HRDP/HRDPO00/HRDPOA60/HRDPOA60_1.jsp?returnType=JSON&authKey=f3pGpa4GLQ2t18ffb7i4sa5RILrJFzmN&pageNum={i}&pageSize=100&srchTraStDt={startdate}&srchTraEndDt={enddate}&outType=1&sort=ASC&sortCol=TRNG_BGDE&crseTracseSe=C0104&srchTraArea1=00"
+  two_month_response = requests.get(two_month_url)
+  two_month_contents = two_month_response.text
+  two_month_json_ob = json.loads(two_month_contents)
+
+  # json에서 데이터프레임으로 변환
+  two_month_body = two_month_json_ob["returnJSON"]
+  two_month_json_data = json.loads(two_month_body)
+  two_month_a = two_month_json_data['srchList']
+  two_month_i = pd.DataFrame(two_month_a)
+  b.append(two_month_i)
+
+concat_df = pd.concat(b)
+
+# 데이터 전처리
+two_month_data = concat_df[["subTitle","title","traStartDate","traEndDate","yardMan","regCourseMan","address","titleLink"]]
+two_month_data.columns = ["주관 기관","교육 명","교육 시작일","교육 종료일","교육 정원","신청 인원","지역","Hrd넷 링크"]
+
+# 신청_인원, 교육_정원 데이터 타입 변경
+two_month_data['신청 인원'] = two_month_data['신청 인원'].astype(int)
+two_month_data['교육 정원'] = two_month_data['교육 정원'].astype(int)
+
+# two_month_data['지역'] = two_month_data['지역'].apply(lambda x: '경기 수원시' if x.startswith('경기 수원시') else x)
+two_month_data['지역'] = two_month_data['지역'].apply(lambda x: x[:6] if x.startswith('경기') else x)
+
+# filtered_df = df[df['지역'].str.startswith('경기')]['지역'].apply(lambda x: x[:6])
+two_month_data = two_month_data[two_month_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름')]
+two_month_data = two_month_data.set_index(keys='주관 기관')
+kdt_ace_df = two_month_data
 
 
 st.set_page_config(
@@ -100,7 +136,7 @@ if not countries:
 else:
     df_filter = df.loc[countries]
 
-st.header("🥇 실시간 인기 국비 부트 캠프 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
 col_metric1, col_metric2, col_metric3 = st.columns(3)
 
 with col_metric1:
@@ -144,8 +180,55 @@ else:
 st.divider()
 st.divider()
 
+# 타이틀
+st.title("❤️인기 국비 부트 캠프❤️")
+
+# 필터 및 데이터 프레임 출력
+ka_countries = st.multiselect(
+"원하는 주관 기관을 고르세요.", sorted(set(kdt_ace_df.index)))
+
+if not ka_countries:
+    kdt_ace_df_filter = kdt_ace_df
+else:
+    kdt_ace_df_filter = kdt_ace_df.loc[ka_countries]
+    
+st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
+kdt_ace_col_metric1, kdt_ace_col_metric2, kdt_ace_col_metric3 = st.columns(3)   
+
+with kdt_ace_col_metric1:
+    st.subheader(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=1).iloc[-1]].index.values[0])
+    st.metric(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['교육 명'].values[0], value = str(kdt_ace_df_filter['신청 인원'].nlargest(n=1).iloc[-1]) + "명")
+    a = kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=1).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
+
+with kdt_ace_col_metric2:
+    st.subheader(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=2).iloc[-1]].index.values[0])
+    st.metric(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['교육 명'].values[0], value = str(kdt_ace_df_filter['신청 인원'].nlargest(n=2).iloc[-1]) + "명")
+    a = kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=2).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
+
+with kdt_ace_col_metric3:
+    st.subheader(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=3).iloc[-1]].index.values[0])
+    st.metric(kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['교육 명'].values[0] , value = str(kdt_ace_df_filter['신청 인원'].nlargest(n=3).iloc[-1]) + "명")
+    a = kdt_ace_df_filter[kdt_ace_df_filter['신청 인원'] == kdt_ace_df_filter['신청 인원'].nlargest(n=3).iloc[-1]]['Hrd넷 링크'].values[0]
+    st.link_button("교육 확인하기", f"{a}")
+
+st.divider()
+st.header("✏️2달 내 개강 과정✏️", anchor=None, help=None)
+st.caption('아래 내용은 실시간으로 업데이트 됩니다!')
+
+# 데이터 프레임 출력
+if not countries:
+    st.dataframe(kdt_ace_df)
+else:
+    st.dataframe(kdt_ace_df.loc[ka_countries])
+    kdt_ace_df.sort_index()
+
+st.divider()
+st.divider()
+
 st.title("❤️국비 기초 교육❤️")
-st.header("🥇 실시간 인기 국비 기초 교육 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
 col_kdc1, col_kdc2, col_kdc3 = st.columns(3)
 
 with col_kdc1:
