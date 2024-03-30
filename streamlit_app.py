@@ -189,6 +189,28 @@ last_year_data = last_year_data.set_index(keys='주관 기관').sort_values(by='
 last_year_data_df = last_year_data
 
 #====================================================================================================================================
+#2023 교육 운영 데이터 호출[그래프]
+
+# 데이터 전처리
+last_year_graph_data = last_year_concat_df[["subTitle","title","regCourseMan","titleLink"]]
+last_year_graph_data.columns = ["주관 기관","교육 명","2023년 총 신청 인원","Hrd넷 링크"]
+
+
+# 신청_인원, 교육_정원 데이터 타입 변경
+last_year_graph_data['2023년 총 신청 인원'] = last_year_graph_data['2023년 총 신청 인원'].astype(int)
+
+
+#중복 합치기
+last_year_graph_data = last_year_graph_data.groupby('주관 기관').agg({
+    '2023년 총 신청 인원': 'sum'
+}).reset_index()
+
+# 원하는 주관기관만 뽑기
+last_year_graph_data = last_year_graph_data[last_year_graph_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름')]
+last_year_graph_data = last_year_graph_data.set_index(keys='주관 기관').sort_values(by='2023년 총 신청 인원' ,ascending=False)
+last_year_graph_data_df = last_year_graph_data
+
+#====================================================================================================================================
 
 #페이지 전체 세팅
 st.set_page_config(
@@ -214,7 +236,7 @@ if not countries:
 else:
     df_filter = df.loc[countries]
 
-st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 실시간 신청 1~3위 🥇", anchor=None, help=None)
 col_metric1, col_metric2, col_metric3 = st.columns(3)
 
 with col_metric1:
@@ -273,7 +295,7 @@ if not ka_countries:
 else:
     kdt_ace_df_filter = kdt_ace_df.loc[ka_countries]
     
-st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 실시간 신청 1~3위 🥇", anchor=None, help=None)
 kdt_ace_col_metric1, kdt_ace_col_metric2, kdt_ace_col_metric3 = st.columns(3)   
 
 with kdt_ace_col_metric1:
@@ -312,7 +334,7 @@ st.divider()
 st.divider()
 
 st.title("❤️국비 기초 교육❤️")
-st.header("🥇 실시간 신청 순위 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 실시간 신청 1~3위 🥇", anchor=None, help=None)
 col_kdc1, col_kdc2, col_kdc3= st.columns(3)
 
 with col_kdc1:
@@ -364,7 +386,7 @@ if not last_year_countries:
 else:
     last_year_data_filter = last_year_data_df.loc[last_year_countries]
     
-st.header("🥇 총 신청 인원 순위 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 총 신청 인원 1~3위 🥇", anchor=None, help=None)
 last_year_metric1, last_year_metric2, last_year_metric3 = st.columns(3)   
 
 with last_year_metric1:
@@ -389,7 +411,7 @@ with last_year_metric3:
     st.link_button("교육 확인하기", f"{a}")
 
 st.divider()
-st.header("✏️1년 간 총 수강 인원✏️", anchor=None, help=None)
+st.header("✏️2023년 과정 별 총 수강 인원✏️", anchor=None, help=None)
 
 # 데이터 프레임 출력
 if not last_year_countries:
@@ -398,4 +420,9 @@ else:
     st.dataframe(last_year_data_df.loc[last_year_countries])
     last_year_data_df.sort_index()
 st.divider()
+st.header("✏️2023년 총 수강 인원✏️", anchor=None, help=None)
+
+st.bar_chart(data=last_year_graph_data_df)
 st.divider()
+
+
