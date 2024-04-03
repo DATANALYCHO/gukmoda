@@ -5,13 +5,7 @@ import json
 from datetime import datetime
 from datetime import timedelta
 
-# 현재 날짜 가져오기 + 현재 날짜 +14일 되는 날 -> 변수화
-today = datetime.now().date()
-to_day = str(today)
-two_week = str(today + timedelta(days=13))
-one_month = str(today + timedelta(days=30))
-
-#2023 교육 운영 데이터 호출
+#2023 교육 운영 데이터 호출[시트용]
 
 b = []
 for i in range(1,16):
@@ -30,86 +24,62 @@ for i in range(1,16):
 last_year_concat_df = pd.concat(b)
 
 # 데이터 전처리
-last_year_data = last_year_concat_df[["subTitle","title","regCourseMan","titleLink"]]
-last_year_data.columns = ["주관 기관","교육 명","2023년 총 신청 인원","Hrd넷 링크"]
-
+last_year_data = last_year_concat_df[["subTitle","title","regCourseMan","address","titleLink","ncsCd"]]
+last_year_data.columns = ["주관 기관","교육 명","2023년 총 신청 인원","지역","Hrd넷 링크","과정 코드"]
 
 # 신청_인원, 교육_정원 데이터 타입 변경
 last_year_data['2023년 총 신청 인원'] = last_year_data['2023년 총 신청 인원'].astype(int)
 
+# 경기 이름 세팅
+last_year_data['지역'] = last_year_data['지역'].apply(lambda x: x[:6] if x.startswith('경기') else x)
 
 #=================================================================================================================================================================================
-#2023 과정별 데이터 호출
 
 #중복 합치기
 last_year_data = last_year_data.groupby('교육 명').agg({
+    '지역': 'first',
     '주관 기관' : 'first',
     '2023년 총 신청 인원': 'sum',
     'Hrd넷 링크' : 'first'
 }).reset_index()
 
-# 원하는 주관기관만 뽑기
-last_year_data = last_year_data[last_year_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름|이스트소프트')]
 
+
+# 원하는 주관기관만 뽑기
+
+# last_year_data = last_year_data[last_year_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름|이스트소프트')]
+last_year_data = last_year_data[last_year_data['교육 명'].str.contains('게임|유니티|unity|언리얼|unreal')]
 last_year_data = last_year_data.set_index(keys='주관 기관').sort_values(by='2023년 총 신청 인원' ,ascending=False)
 last_year_data_df = last_year_data
 
-#====================================================================================================================================
-
-#2023 교육 운영 데이터 호출[그래프]
-
-#중복 합치기
-last_year_graph_data = last_year_data.groupby('주관 기관').agg({
-    '2023년 총 신청 인원': 'sum'
-}).reset_index()
-
-# 원하는 주관기관만 뽑기
-last_year_graph_data = last_year_graph_data[last_year_graph_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름|이스트소프트')]
-last_year_graph_data = last_year_graph_data.set_index(keys='주관 기관').sort_values(by='2023년 총 신청 인원' ,ascending=False)
-last_year_graph_data_df = last_year_graph_data
-
-#==================================================================================================================================
-
-#중복 합치기
-last_year_sheet_data = last_year_data.groupby('주관 기관').agg({
-    '2023년 총 신청 인원': 'sum',
-    'Hrd넷 링크' : 'first'
-}).reset_index()
-
-# 원하는 주관기관만 뽑기
-last_year_sheet_data = last_year_sheet_data[last_year_sheet_data['주관 기관'].str.contains('스파르타|그렙|패스트|엘리스|멋쟁이|코드잇|모두의연구소|플레이데이터|멀티캠퍼스|구름|이스트소프트')]
-last_year_sheet_data = last_year_sheet_data.set_index(keys='주관 기관').sort_values(by='2023년 총 신청 인원' ,ascending=False)
-last_year_sheet_data_df = last_year_sheet_data
-
-#====================================================================================================================================
 
 st.set_page_config(
-    page_title="🗓️2023년 부트캠프 대시보드🗓️",
+    page_title="🗓️2023년 게임 관련 교육🗓️",
     page_icon="⭐",
     layout="wide")
 
-st.sidebar.header("2️⃣2023년 부트 캠프 데이터")
+st.sidebar.header("3️⃣2023년 게임 관련 교육")
 
 a1, a2, a3, a4 = st.columns(4)   
 
 with a1:
     #버튼
-    st.link_button("❤️국모다 홈페이지로 마실가기❤️", "https://slashpage.com/%EA%B5%AD%EB%AA%A8%EB%8B%A4")
+    st.link_button("❤️국모다 홈페이지 접속❤️", "https://slashpage.com/%EA%B5%AD%EB%AA%A8%EB%8B%A4")
 
 with a2:
     #버튼
-    st.link_button("💛부트캠프 상담 신청하기💛", "https://forms.gle/ytur6ENewhtsNXRo8")
+    st.link_button("💛부트캠프 상담 신청💛", "https://forms.gle/ytur6ENewhtsNXRo8")
 
 with a3:
     #버튼
-    st.link_button("💚부트캠프 테스트 하러가기💚", "https://smore.im/quiz/OeXhUTZjG4")
+    st.link_button("💚부트캠프 테스트 체험💚", "https://smore.im/quiz/OeXhUTZjG4")
     
 with a4:
     #버튼
-    st.link_button("💙국모다 오픈채팅방 참여하기💙", "https://open.kakao.com/o/g9nk698f")
+    st.link_button("💙국모다 오픈채팅방 참여💙", "https://open.kakao.com/o/g9nk698f")
 
 # 타이틀
-st.title("💜2023년 인기 부트 캠프💜")
+st.title("💜2023년 게임 관련 교육💜")
 
 # 필터 및 데이터 프레임 출력
 last_year_countries = st.multiselect(
@@ -120,7 +90,7 @@ if not last_year_countries:
 else:
     last_year_data_filter = last_year_data_df.loc[last_year_countries]
     
-st.header("🥇 과정 별 수강 인원 1~3위 🥇", anchor=None, help=None)
+st.header("🥇 수강 인원 1~3위 🥇", anchor=None, help=None)
 last_year_metric1, last_year_metric2, last_year_metric3 = st.columns(3)   
 
 with last_year_metric1:
@@ -153,14 +123,4 @@ if not last_year_countries:
 else:
     st.dataframe(last_year_data_df.loc[last_year_countries], column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
     last_year_data_df.sort_index()
-st.divider()
-st.header("✏️기관 별 수강 인원✏️", anchor=None, help=None)
-
-last_year_graph_data1, last_year_graph_data2 = st.columns(2)
-with last_year_graph_data1:
-    st.dataframe(data=last_year_sheet_data_df, column_config={"Hrd넷 링크":st.column_config.LinkColumn()})
-    
-with last_year_graph_data2:   
-    st.bar_chart(data=last_year_graph_data_df)
-
 st.divider()
